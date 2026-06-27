@@ -1,0 +1,15 @@
+# dependencies / build scratch
+test/node_modules/
+node_modules/
+build_assets/
+*.db
+
+# scratch / logs from local dev + testing
+*.log
+run.out
+run.err
+err.tmp
+*.tmp
+
+# OS
+.DS_Store

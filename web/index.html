@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Spectral Gambit — 8-bit chess vs an AI that wrote itself</title>
+<meta name="description" content="Play chess against an engine hand-written in Z80 assembly, running on an emulated ZX Spectrum in your browser. Put a game down, come back hours later.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='4' y='0' fill='%23d80000'/%3E%3Crect width='16' height='4' y='4' fill='%23ffd000'/%3E%3Crect width='16' height='4' y='8' fill='%2300c000'/%3E%3Crect width='16' height='4' y='12' fill='%2300c0c0'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="rainbow"></div>
+
+<header>
+  <h1>SPECTRAL&nbsp;GAMBIT</h1>
+  <p class="tag">chess from inside the machine · <span>48K · Z80 · woven by Fable</span></p>
+</header>
+
+<div id="resume" class="banner hidden">
+  <span>↩ Resumed your game in progress<span class="when"></span>.</span>
+  <button class="fresh">Start a new game</button>
+  <button class="dismiss">Dismiss</button>
+</div>
+
+<main>
+  <section class="stage">
+    <div class="crt">
+      <canvas id="screen" width="320" height="240"></canvas>
+      <div id="loading" class="loading">
+        <div class="stripes"></div>
+        <p>LOADING <b>CHESS</b>…</p>
+      </div>
+    </div>
+
+    <div class="touch">
+      <div class="dpad">
+        <button data-key="Q" class="up">▲</button>
+        <button data-key="O" class="left">◀</button>
+        <button data-key="ENTER" class="ok">●</button>
+        <button data-key="P" class="right">▶</button>
+        <button data-key="A" class="down">▼</button>
+      </div>
+      <div class="hint">
+        Arrow keys move the cursor · Enter picks up / drops a piece
+        <label class="toggle"><input type="checkbox" id="tapmove" checked> Tap the board to move</label>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="status-row">
+      <span id="status" class="status">…</span>
+      <span id="movecount" class="movecount"></span>
+    </div>
+
+    <div class="readout">
+      <div><label>Level</label><b id="lvl">–</b></div>
+      <div><label>Eval</label><b id="eval">–</b></div>
+      <div><label>Material</label><b id="matl">–</b></div>
+    </div>
+
+    <div class="clockbar">
+      <label for="timecontrol">Clock</label>
+      <select id="timecontrol" title="A real wall-clock timer. Off = pause anytime.">
+        <option value="off">No clock — pause anytime</option>
+        <option value="3+2">Blitz 3+2</option>
+        <option value="5+0">Blitz 5+0</option>
+        <option value="10+5">Rapid 10+5</option>
+        <option value="15+10">Rapid 15+10</option>
+      </select>
+      <div id="clocks" class="clocks hidden">
+        <div class="clk" id="clk-you"><label>You</label><b>--:--</b></div>
+        <div class="clk" id="clk-eng"><label>Engine</label><b>--:--</b></div>
+      </div>
+      <div id="clockmsg" class="clockmsg"></div>
+    </div>
+
+    <div class="levels">
+      <span>Strength</span>
+      <button data-level="1">1</button><button data-level="2">2</button>
+      <button data-level="3">3</button><button data-level="4">4</button>
+      <button data-level="5">5</button>
+    </div>
+
+    <div class="actions">
+      <button id="newgame">New game</button>
+      <button id="undo">Take back</button>
+      <button id="flip">Flip</button>
+      <button id="colour">Colour</button>
+    </div>
+
+    <h3>Move log</h3>
+    <div id="logwrap" class="logwrap">
+      <table><tbody id="movelog"></tbody></table>
+    </div>
+    <button id="pgn" class="wide ghost">Copy PGN</button>
+
+    <h3>Saved games</h3>
+    <p class="note">Auto-saves after every move — close the tab, come back whenever.</p>
+    <ul id="slots" class="slots"></ul>
+    <div class="slotsave">
+      <input id="slotname" placeholder="name this game" maxlength="24"
+             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button id="saveslot">Save</button>
+    </div>
+    <div class="actions">
+      <button id="export" class="ghost">Export .szx</button>
+      <label class="ghost filebtn">Import .szx<input id="importfile" type="file" accept=".szx"></label>
+    </div>
+  </aside>
+</main>
+
+<section class="compete">
+  <div class="card">
+    <h2>⚔ Engine ladder</h2>
+    <p class="note">Beat the AI at rising strengths. Set your name, win, and log it — ranked by the highest level you've cleared.</p>
+    <div class="namerow">
+      <input id="playername" placeholder="your player name" maxlength="24"
+             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div id="reportbox" class="reportbox hidden">
+      <p id="reportstatus" class="dim"></p>
+      <div class="reportbtns">
+        <button id="report-win">I won</button>
+        <button id="report-loss">I lost</button>
+        <button id="report-draw">Draw</button>
+      </div>
+    </div>
+    <h3>Leaderboard</h3>
+    <table class="lb"><thead><tr><th>#</th><th>Player</th><th>Best</th><th>Wins</th></tr></thead>
+      <tbody id="leaderboard"></tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>👥 Play a friend</h2>
+    <p class="note">Correspondence chess: each side plays one move, then sends the board on. Put it down, come back whenever — just like a save-state, but shared.</p>
+    <div id="corr-idle">
+      <button id="corr-create" class="primary wide">Create a correspondence game</button>
+      <p class="dim small">…or open a friend's share link to join as Black.</p>
+    </div>
+    <div id="corr-active" class="hidden">
+      <div class="corrstate">You are <b id="corr-color">white</b> · <span id="corr-state">…</span></div>
+      <div class="sharerow">
+        <input id="corr-share" readonly>
+        <button id="corr-copy">Copy link</button>
+      </div>
+      <div class="actions">
+        <button id="corr-submit" class="primary">Submit move</button>
+        <button id="corr-refresh">Refresh</button>
+        <button id="corr-leave" class="ghost">Leave</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>The opponent is a real chess engine — alpha-beta search, transposition tables, the
+  lot — <b>hand-written&nbsp;🦾 in Z80 assembly by Fable</b> and running on a faithful
+  emulation of the Romanian ICE Felix <b>HC-91</b> (a ZX Spectrum clone), compiled to
+  WebAssembly. Every move is the actual 8-bit machine thinking.</p>
+</footer>
+
+<div id="flash" class="flash"></div>
+
+<script src="config.js"></script>
+<script src="spectral.js"></script>
+<script type="module" src="app.js"></script>
+<script type="module" src="clock.js"></script>
+<script type="module" src="compete.js"></script>
+</body>
+</html>

@@ -101,6 +101,10 @@ async function openSession() {
 
 async function pushState() {
   if (!session) return;
+  // don't push while the engine is mid-search — sg.board() is speculative then,
+  // and Claude must only ever see settled positions. The 3s poll re-pushes once
+  // the engine finishes (boardSig changes), so nothing is missed.
+  if (/thinking/i.test(window.SG.status())) return;
   await ensurePos();
   pushedSig = boardSig();                 // mark before the await so poll won't re-trigger
   const pos = curPos();

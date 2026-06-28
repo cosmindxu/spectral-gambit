@@ -181,9 +181,15 @@ function poll() {
     return;
   }
 
+  // Only react to SETTLED positions. While the engine is "thinking" it searches
+  // on the live board in RAM, so sg.board() returns speculative mid-search
+  // positions; recording/autosaving each of those churns the move log and storms
+  // localStorage (dozens of ~64KB writes/sec — which crashed the page under fast
+  // autonomous play). Wait for the engine to finish before treating a change as a move.
   sg.board(boardBuf);
   const cur = M.HEAPU8.subarray(boardBuf, boardBuf + 128);
-  if (!sameBoard(cur, prevBoard)) {
+  const thinking = /thinking/i.test(lastStatus);
+  if (!thinking && !sameBoard(cur, prevBoard)) {
     if (isStartPosition(cur)) {                   // new game / reset
       history = []; renderLog(); aiMoveCount = 0; playerMoveCount = 0;
     } else {
@@ -196,7 +202,7 @@ function poll() {
     }
     prevBoard.set(cur);
     predCursor = null;                            // re-sync tap-to-move after any move
-    autoSave();                                   // persist after every ply
+    autoSave();                                   // persist after every settled ply
   }
 
   // fire a one-shot game-over event for the compete layer

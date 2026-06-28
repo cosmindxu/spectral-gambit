@@ -5,8 +5,12 @@
 // The conversation itself happens in the player's Claude app.
 // position.js pulls in chess.js (~108KB); load it lazily only when the
 // companion is actually enabled, so the default page stays light.
-let buildPosition = null;
-async function ensurePos() { if (!buildPosition) ({ buildPosition } = await import('./position.js')); }
+let buildPosition = null, readState = null;
+async function ensurePos() { if (!buildPosition) ({ buildPosition, readState } = await import('./position.js')); }
+const curPos = () => buildPosition(readState(window.SG));
+// signature of the board the current suggestion cards belong to (staleness guard)
+function boardSig() { const b = window.SG.board(); let h = 0; for (let i = 0; i < 128; i++) h = (Math.imul(h, 31) + b[i]) | 0; return h; }
+let sugSig = null;
 
 const API = (typeof window.SG_API_BASE === 'string' && window.SG_API_BASE)
   ? window.SG_API_BASE
@@ -66,7 +70,7 @@ async function openSession() {
 async function pushState() {
   if (!session) return;
   await ensurePos();
-  const pos = buildPosition(window.SG.history(), window.SG.board());
+  const pos = curPos();
   const ev = (window.SG.screen().match(/Eval (-?\d+)/) || [])[1];
   const r = await api('/api/companion/state', { method: 'POST', body: JSON.stringify({
     sessionId: session.sessionId, fen: pos.fen, pgn: pos.pgn, side: pos.side,
@@ -87,14 +91,18 @@ async function poll() {
     logLine(r.suggestions);
   }
   for (const c of r.commands || []) if (!handledCmd.has(c.id)) { handledCmd.add(c.id); handleCommand(c); }
+  // robust staleness guard: if the board changed since the cards were shown
+  // (a manual move, an engine reply, anything), retire them — even if onPly missed it
+  if (sugSig !== null && boardSig() !== sugSig) clearCards('position changed — ask Claude for fresh advice');
 }
 
 function reflectConnected(c) { setStatus(c ? 'connected' : 'waiting', c ? 'Claude connected ✓' : 'waiting for Claude…'); }
 function setStatus(cls, text) { const el = $('companion-status'); if (el) { el.textContent = text; el.className = 'comp-status ' + cls; } }
 
 // ---- suggestion cards ----
-function clearCards(msg) { $('companion-suggestions').innerHTML = msg ? `<p class="dim small">${msg}</p>` : ''; }
+function clearCards(msg) { sugSig = null; $('companion-suggestions').innerHTML = msg ? `<p class="dim small">${msg}</p>` : ''; }
 function renderCards(sug) {
+  sugSig = boardSig();                  // these cards belong to the current board
   const wrap = $('companion-suggestions');
   wrap.innerHTML = sug.comment ? `<p class="comp-comment">${esc(sug.comment)}</p>` : '';
   for (const c of sug.candidates || []) {
@@ -122,9 +130,9 @@ function logLine(sug) {
 // ---- playing moves ----
 async function playSan(san) {
   await ensurePos();
-  const pos = buildPosition(window.SG.history(), window.SG.board());
+  const pos = curPos();
   const m = pos.sanToMove(san);
-  if (!m) { window.SG.flash(`couldn't map ${san}`); return; }
+  if (!m) { window.SG.flash(`${san} isn't legal now — the position changed`); clearCards('position changed — ask Claude for fresh advice'); return; }
   window.SG.tapSquare(alg2sq(m.from));
   window.SG.tapSquare(alg2sq(m.to));        // navTo chains via predicted cursor
   window.SG.flash(`playing ${san}`);

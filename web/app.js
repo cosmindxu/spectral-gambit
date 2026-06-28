@@ -429,6 +429,7 @@ window.SG = {
   onReady:   (cb) => { const t = setInterval(() => { if (ready) { clearInterval(t); cb(); } }, 120); },
   // tap-to-move helpers (also used by the test harness)
   cursor:    () => sg.peek(CURSOR_SQ),
+  peek:      (addr) => sg.peek(addr),
   flip:      () => sg.peek(FLIP_FLAG) & 1,
   screen:    () => M.UTF8ToString(sg.text()),
   board:     () => { sg.board(boardBuf); return Array.from(M.HEAPU8.subarray(boardBuf, boardBuf + 128)); },

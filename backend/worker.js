@@ -204,10 +204,16 @@ const MCP_PROTO = '2025-06-18';
 const SUPPORTED_PROTO = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const MCP_INSTRUCTIONS =
   "You are a chess companion for a live game on the player's Spectral Gambit page. " +
-  "First call pair with the 6-character code shown on their page. Then call get_position " +
-  "(FEN, side to move, engine eval, and the legal moves) and reason about it. Offer THREE " +
-  "candidate moves with one-line rationales and show them with propose_candidates (use only " +
-  "legal SAN). Discuss freely in chat; use play_move only if the player asks you to make a move.";
+  "The player plays WHITE; the engine plays Black.\n" +
+  "Workflow: (1) Call pair once with the 6-character code from their page. " +
+  "(2) Call get_position to see the live FEN, whose turn it is, the engine eval, and the legal moves. " +
+  "(3) When it is White's turn, propose exactly THREE legal candidate moves, each with a one-line " +
+  "rationale, via propose_candidates — they appear as click-to-play cards on the page. Be decisive and concise.\n" +
+  "Playing: if the player asks you to play a move, call play_move directly with legal SAN — do NOT ask " +
+  "for confirmation first; the page handles confirm/auto-play.\n" +
+  "Turn flow: the page cannot notify you when the board changes, so after the player or the engine moves, " +
+  "the player will prompt you again (e.g. 'next') — just call get_position to refresh, then advise. " +
+  "ALWAYS choose from get_position's legalMoves; never suggest a move that isn't in that list.";
 
 const TOOLS = [
   { name: 'pair', title: 'Pair with the chess game',
@@ -225,8 +231,8 @@ const TOOLS = [
       candidates: { type: 'array', minItems: 1, maxItems: 5, items: { type: 'object',
         properties: { san: { type: 'string', description: 'Legal move in SAN, e.g. Nf3' }, rationale: { type: 'string', description: 'One-line reason' } }, required: ['san'] } },
       comment: { type: 'string', description: 'Optional overall comment shown above the cards' } }, required: ['candidates'] } },
-  { name: 'play_move', title: 'Ask to play a move',
-    description: 'Ask the page to play a move on the board (the player confirms before it is made). Use legal SAN.',
+  { name: 'play_move', title: 'Play a move',
+    description: 'Play a move on the board. With auto-play on it plays immediately; otherwise the player confirms with one tap. Call this directly when asked to make a move — no need to ask permission first. Use legal SAN.',
     inputSchema: { type: 'object', properties: { san: { type: 'string', description: 'Legal move in SAN' } }, required: ['san'] } },
 ];
 
@@ -338,7 +344,7 @@ async function mcpToolCall(id, params, db, mcpSession) {
     if (!san) return toolErr(id, 'Provide a move in SAN.');
     await db.prepare("INSERT INTO companion_commands (session_id,type,san,status,created_at) VALUES (?,?,?,?,?)")
       .bind(sid, 'play', san, 'pending', now()).run();
-    return toolOk(id, `Asked the player to play ${san}. They will confirm it on the board.`);
+    return toolOk(id, `Sent ${san} to the board — it plays immediately if auto-play is on, otherwise the player confirms with one tap.`);
   }
   return toolErr(id, 'Unknown tool: ' + name);
 }

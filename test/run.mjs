@@ -21,6 +21,12 @@ const browser = await puppeteer.launch({
 const page = await browser.newPage();
 await page.setViewport({ width: 1100, height: 1500 });
 await page.bringToFront();   // keep the tab "visible" so rAF isn't throttled (would starve the emulator)
+// config.js hardcodes the prod worker; point the page at the local dev API instead
+await page.setRequestInterception(true);
+page.on('request', (req) => {
+  if (req.url().endsWith('/config.js')) return req.respond({ status: 200, contentType: 'application/javascript', body: `window.SG_API_BASE='${API}';` });
+  req.continue();
+});
 let errs = [];
 await page.evaluateOnNewDocument(() => {
   window.__clip = null;

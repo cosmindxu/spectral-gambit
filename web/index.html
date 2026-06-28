@@ -153,6 +153,51 @@
   </div>
 </section>
 
+<section class="companion">
+  <div class="card">
+    <div class="comp-head">
+      <h2>🤝 AI Companion <span class="badge">MCP</span></h2>
+      <label class="toggle"><input type="checkbox" id="companion-enable"> Enable</label>
+    </div>
+    <p class="note">Let <b>your own Claude</b> advise this game. The chat happens in your Claude app
+      (claude.ai / Desktop / Code) — this page shares the live position and shows Claude's three
+      suggestions as click-to-play cards. No API key; uses your Claude.</p>
+
+    <div id="companion-body" class="hidden">
+      <div class="comp-connect">
+        <div class="comp-row"><span class="k">Connector URL</span><code id="companion-url">…</code></div>
+        <div class="comp-row"><span class="k">Pairing code</span><code id="companion-code" class="code">…</code></div>
+        <div class="comp-row"><span class="k">Status</span><span id="companion-status" class="comp-status waiting">waiting…</span></div>
+      </div>
+
+      <details class="comp-setup"><summary>Set up in <b>claude.ai</b> (Pro/Max/Team)</summary>
+        <ol><li>Settings → <b>Connectors</b> → <b>Add custom connector</b>.</li>
+        <li>Paste the <b>Connector URL</b> above; finish adding (no auth needed).</li>
+        <li>In a chat, say: <i>“pair with code <span class="codeRef">ABC123</span>”</i> using the code above.</li>
+        <li>Then ask: <i>“What are my best three moves?”</i></li></ol>
+      </details>
+      <details class="comp-setup"><summary>Set up in <b>Claude Desktop</b></summary>
+        <ol><li>Add to <code>claude_desktop_config.json</code> under <code>mcpServers</code>:</li>
+        <li><pre id="companion-desktop">…</pre></li>
+        <li>Restart Claude Desktop; tell it to <b>pair</b> with the code.</li></ol>
+      </details>
+      <details class="comp-setup"><summary>Set up in <b>Claude Code</b></summary>
+        <ol><li>Run: <code id="companion-cli">claude mcp add …</code></li>
+        <li>Then in a session, tell it to <b>pair</b> with the code.</li></ol>
+      </details>
+
+      <div id="companion-cmd" class="comp-cmd"></div>
+      <h3>Claude's suggestions</h3>
+      <div id="companion-suggestions" class="comp-cards"><p class="dim small">Ask your Claude for advice — its three moves will appear here.</p></div>
+
+      <label class="toggle small"><input type="checkbox" id="companion-autoplay"> Auto-play moves Claude chooses (otherwise confirm each)</label>
+      <h3>Companion log</h3>
+      <div id="companion-log" class="comp-log"></div>
+      <p class="note">⚠ Your board position is shared with your Claude through the connector.</p>
+    </div>
+  </div>
+</section>
+
 <footer>
   <p>The opponent is a real chess engine — alpha-beta search, transposition tables, the
   lot — <b>hand-written&nbsp;🦾 in Z80 assembly by Fable</b> and running on a faithful
@@ -167,5 +212,6 @@
 <script type="module" src="app.js"></script>
 <script type="module" src="clock.js"></script>
 <script type="module" src="compete.js"></script>
+<script type="module" src="companion.js"></script>
 </body>
 </html>

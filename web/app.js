@@ -15,7 +15,7 @@ let prevBoard = new Uint8Array(128);
 let history = [];                    // [{san, side, from, to, ...}]
 let lastStatus = '', lastEngineMove = '', curLevel = 2, reportedOver = '';
 let queue = [], active = null;       // input pulse state machine
-let onPlyCb = null, onOverCb = null; // hooks for the compete layer
+let onPlyCbs = [], onOverCbs = []; // hooks (clock, compete, companion) — multi-subscriber
 
 const START_FEN_BOARD = buildStartBoard();
 
@@ -187,7 +187,7 @@ function poll() {
       history = []; renderLog();
     } else {
       const mv = diffMove(prevBoard, cur);
-      if (mv) { history.push(mv); renderLog(); if (onPlyCb) onPlyCb(mv, history.slice()); }
+      if (mv) { history.push(mv); renderLog(); onPlyCbs.forEach(cb => cb(mv, history.slice())); }
     }
     prevBoard.set(cur);
     predCursor = null;                            // re-sync tap-to-move after any move
@@ -196,7 +196,7 @@ function poll() {
 
   // fire a one-shot game-over event for the compete layer
   const ov = lastStatus.match(/checkmate|stalemate|white wins|black wins|draw|flag/i);
-  if (ov && ov[0] !== reportedOver) { reportedOver = ov[0]; if (onOverCb) onOverCb(lastStatus); }
+  if (ov && ov[0] !== reportedOver) { reportedOver = ov[0]; onOverCbs.forEach(cb => cb(lastStatus)); }
   else if (!ov) reportedOver = '';
 }
 
@@ -424,8 +424,8 @@ window.SG = {
   status:    () => lastStatus,
   tap,
   flash,
-  onPly:     (cb) => { onPlyCb = cb; },
-  onOver:    (cb) => { onOverCb = cb; },
+  onPly:     (cb) => { onPlyCbs.push(cb); },
+  onOver:    (cb) => { onOverCbs.push(cb); },
   onReady:   (cb) => { const t = setInterval(() => { if (ready) { clearInterval(t); cb(); } }, 120); },
   // tap-to-move helpers (also used by the test harness)
   cursor:    () => sg.peek(CURSOR_SQ),

@@ -146,6 +146,44 @@ h3{margin:16px 0 8px;font-size:13px;color:var(--dim);text-transform:uppercase;le
 .card .actions button{flex:1}
 button:disabled{opacity:.4;cursor:not-allowed}
 
+/* AI Companion */
+.companion{max-width:1040px;margin:6px auto;padding:0 16px}
+.comp-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.comp-head h2{margin:0;font-size:18px}
+.badge{font-size:11px;background:#1c1c2c;border:1px solid var(--line);color:var(--accent);padding:2px 7px;border-radius:6px;vertical-align:middle}
+.comp-connect{background:#0e0e18;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0}
+.comp-row{display:flex;align-items:center;gap:10px;padding:3px 0;flex-wrap:wrap}
+.comp-row .k{color:var(--dim);font-size:12px;text-transform:uppercase;letter-spacing:.06em;min-width:110px}
+.comp-row code{background:#000;border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:13px;word-break:break-all}
+.comp-row code.code{font-size:18px;letter-spacing:.18em;color:var(--accent)}
+.comp-status{padding:2px 10px;border-radius:20px;font-size:13px}
+.comp-status.waiting{background:#2a2400;color:var(--zx-yel)}
+.comp-status.connected{background:#0c2a0c;color:#7dff7d}
+.comp-status.offline{background:#2a0c0c;color:#ff8080}
+.comp-setup{background:#0e0e18;border:1px solid var(--line);border-radius:9px;padding:8px 12px;margin:6px 0;font-size:13px}
+.comp-setup summary{cursor:pointer;color:var(--ink)}
+.comp-setup ol{margin:8px 0 4px;padding-left:20px;color:var(--dim)}
+.comp-setup li{margin:4px 0}
+.comp-setup code,.comp-setup pre{background:#000;border:1px solid var(--line);border-radius:6px;padding:2px 6px;font-size:12px;color:var(--ink)}
+.comp-setup pre{display:block;padding:8px;overflow:auto;white-space:pre;margin:4px 0}
+.codeRef{color:var(--accent);font-weight:700}
+.comp-cmd:empty{display:none}
+.comp-cmd{display:flex;align-items:center;gap:10px;background:#1a1a0a;border:1px solid var(--accent);border-radius:9px;padding:10px 12px;margin:10px 0}
+.comp-cmd button{background:var(--accent);color:#000;border:0;border-radius:7px;padding:6px 14px;font-weight:700;cursor:pointer}
+.comp-cmd button.ghost{background:transparent;color:var(--dim);border:1px solid var(--line)}
+.comp-comment{color:var(--ink);margin:0 0 8px}
+.comp-cards{display:flex;flex-direction:column;gap:8px;margin:4px 0}
+.comp-card{display:grid;grid-template-columns:64px 1fr auto;align-items:center;gap:10px;background:#0e0e18;border:1px solid var(--line);border-radius:9px;padding:8px 12px}
+.comp-card.illegal{opacity:.6}
+.comp-move{font-size:18px;font-weight:700}
+.comp-move .warn{font-size:11px;color:#ff8080;font-weight:400}
+.comp-why{color:var(--dim);font-size:13px}
+.comp-play{background:var(--accent);color:#000;border:0;border-radius:7px;padding:6px 14px;font-weight:700;cursor:pointer}
+.comp-log{display:flex;flex-direction:column;gap:4px;max-height:140px;overflow:auto;background:#0e0e18;border:1px solid var(--line);border-radius:9px;padding:8px 10px}
+.comp-log:empty{display:none}
+.comp-logline{font-size:13px;color:var(--dim);border-bottom:1px solid var(--line);padding-bottom:3px}
+.toggle.small{font-size:12px;color:var(--dim);margin:10px 0}
+
 footer{max-width:1040px;margin:10px auto 40px;padding:0 16px;color:var(--dim);font-size:13px;text-align:center}
 footer b{color:var(--ink)}
 

@@ -30,3 +30,50 @@ CREATE TABLE IF NOT EXISTS ladder (
 
 CREATE INDEX IF NOT EXISTS idx_ladder_name  ON ladder(name);
 CREATE INDEX IF NOT EXISTS idx_games_updated ON games(updated_at);
+
+-- ===== AI Companion (MCP) =====
+-- A companion session links the page (by opaque id) to the player's Claude
+-- (paired by a short code). Chess positions are low-sensitivity; the pairing
+-- code is the access gate.
+CREATE TABLE IF NOT EXISTS companion_sessions (
+  id          TEXT PRIMARY KEY,
+  code        TEXT NOT NULL,
+  mcp_bound   INTEGER NOT NULL DEFAULT 0,   -- 1 once a Claude has paired
+  created_at  INTEGER,
+  last_seen   INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_companion_code ON companion_sessions(code);
+
+-- latest position pushed by the page (one row per session)
+CREATE TABLE IF NOT EXISTS companion_state (
+  session_id  TEXT PRIMARY KEY,
+  fen TEXT, pgn TEXT, side TEXT, eval INTEGER, level INTEGER,
+  legal_moves TEXT,                         -- JSON array of SAN
+  updated_at  INTEGER
+);
+
+-- latest suggestions written by Claude via the MCP server (one row per session)
+CREATE TABLE IF NOT EXISTS companion_suggestions (
+  session_id TEXT PRIMARY KEY,
+  candidates TEXT,                          -- JSON [{san, rationale}]
+  comment    TEXT,
+  created_at INTEGER
+);
+
+-- play commands queued by Claude for the page to execute
+CREATE TABLE IF NOT EXISTS companion_commands (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_id TEXT NOT NULL,
+  type       TEXT NOT NULL,                 -- 'play'
+  san        TEXT,
+  status     TEXT NOT NULL DEFAULT 'pending', -- pending | done | dismissed
+  created_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_companion_cmd ON companion_commands(session_id, status);
+
+-- binds an MCP connection (Mcp-Session-Id) to a game session after pair(code)
+CREATE TABLE IF NOT EXISTS companion_bindings (
+  mcp_session TEXT PRIMARY KEY,
+  session_id  TEXT NOT NULL,
+  created_at  INTEGER
+);

@@ -5,9 +5,39 @@
 // The conversation itself happens in the player's Claude app.
 // position.js pulls in chess.js (~108KB); load it lazily only when the
 // companion is actually enabled, so the default page stays light.
-let buildPosition = null, readState = null;
-async function ensurePos() { if (!buildPosition) ({ buildPosition, readState } = await import('./position.js')); }
+let buildPosition = null, readState = null, Chess = null;
+async function ensurePos() { if (!buildPosition) ({ buildPosition, readState, Chess } = await import('./position.js')); }
 const curPos = () => buildPosition(readState(window.SG));
+
+// Authoritative move history: keep a chess.js game in step with the real
+// position by reconciling it (≤2 plies, since the engine usually replies
+// between our pushes) against the authoritative FEN. The board-diff move log
+// can mislabel/merge fast 2-ply changes; this never does.
+let trackerGame = null;
+const fenKey = (fen) => { const f = fen.split(' '); return f[0] + ' ' + f[1]; };   // placement + side
+const movetext = (g) => g.pgn().replace(/\[[^\]]*\]\s*/g, '').replace(/\*\s*$/, '').trim();  // moves only, no headers
+function authPgn(curFen) {
+  try {
+    if (!trackerGame) trackerGame = new Chess();
+    if (fenKey(trackerGame.fen()) === fenKey(curFen)) return movetext(trackerGame);
+    for (const m of trackerGame.moves({ verbose: true })) {            // 1 ply
+      trackerGame.move(m);
+      if (fenKey(trackerGame.fen()) === fenKey(curFen)) return movetext(trackerGame);
+      trackerGame.undo();
+    }
+    for (const m1 of trackerGame.moves({ verbose: true })) {           // 2 plies (you + engine)
+      trackerGame.move(m1);
+      for (const m2 of trackerGame.moves({ verbose: true })) {
+        trackerGame.move(m2);
+        if (fenKey(trackerGame.fen()) === fenKey(curFen)) return movetext(trackerGame);
+        trackerGame.undo();
+      }
+      trackerGame.undo();
+    }
+    trackerGame = new Chess(curFen);                                   // jump (new game / take-back / load) — history restarts
+    return '';
+  } catch (e) { try { trackerGame = new Chess(curFen); } catch (_) { trackerGame = null; } return ''; }
+}
 // signature of the board the current suggestion cards belong to (staleness guard)
 function boardSig() { const b = window.SG.board(); let h = 0; for (let i = 0; i < 128; i++) h = (Math.imul(h, 31) + b[i]) | 0; return h; }
 let sugSig = null;        // board the current cards belong to
@@ -40,6 +70,7 @@ function init() {
 
 async function start() {
   $('companion-body').classList.remove('hidden');
+  trackerGame = null;                       // fresh move-history tracking each session
   try {
     const saved = JSON.parse(localStorage.getItem('sg_companion_session') || 'null');
     session = saved && saved.sessionId ? saved : await openSession();
@@ -75,7 +106,7 @@ async function pushState() {
   const pos = curPos();
   const ev = (window.SG.screen().match(/Eval (-?\d+)/) || [])[1];
   const r = await api('/api/companion/state', { method: 'POST', body: JSON.stringify({
-    sessionId: session.sessionId, fen: pos.fen, pgn: pos.pgn, side: pos.side,
+    sessionId: session.sessionId, fen: pos.fen, pgn: authPgn(pos.fen), side: pos.side,
     eval: ev ? parseInt(ev, 10) : 0, level: window.SG.level(), legalMoves: pos.legal,
   }) }).catch(() => null);
   if (r && 'connected' in r) reflectConnected(r.connected);

@@ -4,6 +4,7 @@
 // from the board. chess.js is used only to derive legal moves and map SAN
 // back to {from,to} for click-to-play.
 import { Chess } from './vendor/chess.js';
+export { Chess };   // re-export so the companion can track the game authoritatively
 
 const T2C = { 1: 'p', 2: 'n', 3: 'b', 4: 'r', 5: 'q', 6: 'k' };
 const sq2alg = (sq) => String.fromCharCode(97 + (sq & 7)) + (((sq >> 4) & 7) + 1);

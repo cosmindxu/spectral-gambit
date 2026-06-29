@@ -63,8 +63,11 @@ async function report(result) {
   const { buildPosition, readState } = await import('./position.js');
   const fen = buildPosition(readState(window.SG)).fen;
   const assisted = window.SG.wasAssisted();
-  const res = await api('/api/ladder', { method: 'POST',
-    body: JSON.stringify({ name: nm, level: window.SG.level(), result, moves, fen, assisted }) }).catch(() => ({ error: 'offline' }));
+  const body = { name: nm, level: window.SG.level(), result, moves, fen, assisted };
+  // a draw may be a repetition / fifty-move, which the server can't see in the final
+  // FEN alone — attach the authoritative position history, but ONLY for draws.
+  if (result === 'draw') body.positionKeys = window.SG.positionKeys();
+  const res = await api('/api/ladder', { method: 'POST', body: JSON.stringify(body) }).catch(() => ({ error: 'offline' }));
   if (res.error) { window.SG.flash(res.error.replace(/^result not verified: /, '')); return; }   // keep box open on reject
   $('reportbox').classList.add('hidden');
   window.SG.flash((res.rank ? `logged — you're #${res.rank}` : 'logged') + (assisted ? ' (with AI 🤖)' : ''));

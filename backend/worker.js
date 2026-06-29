@@ -118,11 +118,13 @@ async function postMove(req, db, id) {
 
 async function postLadder(req, db) {
   const b = await req.json().catch(() => ({}));
-  const { name, level, result, moves, fen } = b;
+  const { name, level, result, moves, fen, positionKeys } = b;
   const assisted = b.assisted ? 1 : 0;
   if (!name || !level || !result) return bad('name, level, result required');
-  // server-side verification: the claimed result must match the actual final position
-  const v = verifyResult(result, fen);
+  // server-side verification: the claimed result must match the actual final position.
+  // positionKeys (the authoritative position history) is sent ONLY for draws, and only
+  // then — it's what's needed to confirm a threefold repetition.
+  const v = verifyResult(result, fen, positionKeys);
   if (!v.ok) return bad('result not verified: ' + v.reason, 422);
   await db.prepare('INSERT INTO ladder (name,level,result,moves,assisted,created_at) VALUES (?,?,?,?,?,?)')
     .bind(String(name).slice(0, 24), level | 0, result, moves | 0, assisted, now()).run();
@@ -133,13 +135,25 @@ async function postLadder(req, db) {
 
 // The human plays White. A WIN must be a real checkmate with Black (the engine)
 // to move (mated); a LOSS the reverse; a DRAW a genuine drawn position.
-function verifyResult(result, fen) {
+function verifyResult(result, fen, positionKeys) {
   if (typeof fen !== 'string' || !fen) return { ok: false, reason: 'no final position supplied' };
   let c;
   try { c = new Chess(fen); } catch (e) { return { ok: false, reason: 'invalid final position' }; }
   if (result === 'win')  return (c.isCheckmate() && c.turn() === 'b') ? { ok: true } : { ok: false, reason: 'not a checkmate in your favour' };
   if (result === 'loss') return (c.isCheckmate() && c.turn() === 'w') ? { ok: true } : { ok: false, reason: 'not a checkmate against you' };
-  if (result === 'draw') return (c.isStalemate() || c.isInsufficientMaterial() || c.isDraw()) ? { ok: true } : { ok: false, reason: 'not a drawn position' };
+  if (result === 'draw') {
+    // (a) draws provable from the final position alone
+    if (c.isStalemate() || c.isInsufficientMaterial()) return { ok: true };
+    // (b) fifty-move rule — the halfmove clock lives in the FEN
+    if (parseInt(fen.split(' ')[4] || '0', 10) >= 100) return { ok: true };
+    // (c) threefold repetition — needs the position history (supplied only for draws):
+    //     the final position-key must occur >=3 times in the authoritative key list.
+    if (Array.isArray(positionKeys) && positionKeys.length >= 6) {
+      const last = positionKeys[positionKeys.length - 1];
+      if (last && positionKeys.filter(k => k === last).length >= 3) return { ok: true };
+    }
+    return { ok: false, reason: 'not a verifiable draw (need the position history for a repetition)' };
+  }
   return { ok: false, reason: 'unknown result' };
 }
 

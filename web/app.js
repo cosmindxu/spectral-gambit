@@ -17,6 +17,7 @@ let lastStatus = '', lastEngineMove = '', curLevel = 2, reportedOver = '';
 let queue = [], active = null;       // input pulse state machine
 let onPlyCbs = [], onOverCbs = []; // hooks (clock, compete, companion) — multi-subscriber
 let aiMoveCount = 0, playerMoveCount = 0;   // AI-played vs total of YOUR (White) moves this game
+let posKeys = [];                            // authoritative position-keys this game (draw/repetition proof)
 
 const START_FEN_BOARD = buildStartBoard();
 
@@ -191,7 +192,7 @@ function poll() {
   const thinking = /thinking/i.test(lastStatus);
   if (!thinking && !sameBoard(cur, prevBoard)) {
     if (isStartPosition(cur)) {                   // new game / reset
-      history = []; renderLog(); aiMoveCount = 0; playerMoveCount = 0;
+      history = []; renderLog(); aiMoveCount = 0; playerMoveCount = 0; posKeys = [];
     } else {
       const mv = diffMove(prevBoard, cur);
       if (mv) {
@@ -199,6 +200,7 @@ function poll() {
         if (mv.side === 0) playerMoveCount++;     // a White (your) move
         onPlyCbs.forEach(cb => cb(mv, history.slice()));
       }
+      posKeys.push(posKey(cur));                  // record this settled position (repetition proof)
     }
     prevBoard.set(cur);
     predCursor = null;                            // re-sync tap-to-move after any move
@@ -420,6 +422,32 @@ function buildStartBoard() {
 }
 function isStartPosition(cur) { return sameBoard(cur, START_FEN_BOARD); }
 
+// compact position-key (FEN placement + side + castling + ep, no clocks), read
+// straight from RAM. Accumulated each settled move; used only to prove a draw by
+// repetition at game-end (the final key must recur >=3x in the history).
+const PIECE_CH = ['', 'P', 'N', 'B', 'R', 'Q', 'K'];
+function posKey(cur) {
+  let pl = '';
+  for (let r = 7; r >= 0; r--) {
+    let e = 0;
+    for (let f = 0; f < 8; f++) {
+      const v = cur[r * 16 + f];
+      if (!v) { e++; continue; }
+      if (e) { pl += e; e = 0; }
+      const ch = PIECE_CH[v & 7] || '?';
+      pl += (v & 8) ? ch.toLowerCase() : ch;
+    }
+    if (e) pl += e;
+    if (r) pl += '/';
+  }
+  const side = (sg.peek(0xE080) & 8) ? 'b' : 'w';
+  const cb = sg.peek(0xE081);
+  const cr = (cb & 1 ? 'K' : '') + (cb & 2 ? 'Q' : '') + (cb & 4 ? 'k' : '') + (cb & 8 ? 'q' : '');
+  const ep = sg.peek(0xE082);
+  const eps = (ep === 0xFF || (ep & 0x88)) ? '-' : (String.fromCharCode(97 + (ep & 7)) + (1 + ((ep >> 4) & 7)));
+  return pl + ' ' + side + ' ' + (cr || '-') + ' ' + eps;
+}
+
 // ---------- bridge for the compete layer (compete.js) ----------
 window.SG = {
   isReady:   () => ready,
@@ -444,6 +472,7 @@ window.SG = {
   markAssisted: () => { aiMoveCount++; },        // companion played one of your moves
   // AI-assisted if the companion played >= 50% of your moves this game
   wasAssisted:  () => { const d = Math.max(playerMoveCount, aiMoveCount); return d > 0 && aiMoveCount / d >= 0.5; },
+  positionKeys: () => posKeys.slice(),           // authoritative position history (sent only to verify a draw)
   flip:      () => sg.peek(FLIP_FLAG) & 1,
   screen:    () => M.UTF8ToString(sg.text()),
   board:     () => { sg.board(boardBuf); return Array.from(M.HEAPU8.subarray(boardBuf, boardBuf + 128)); },

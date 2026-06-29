@@ -30,7 +30,7 @@ w('watchdog started, paired code=' + code)
 
 prev, stall = None, time.time()
 reason = 'max-time'
-for i in range(360):                      # 360 * 30s = 3h ceiling
+for i in range(480):                      # 360 * 30s = 3h ceiling
     if os.path.exists(DIR + '/result.json'):
         reason = 'RESULT SAVED (driver finished)'; break
     try:
@@ -46,8 +46,8 @@ for i in range(360):                      # 360 * 30s = 3h ceiling
     el = now - stall
     if lc == 0:
         reason = 'GAME OVER (no legal moves) ' + fen; break
-    if side == 'white' and el > 300:
-        reason = f'STALL: White to move but no move for {int(el)}s - agent B not proceeding. fen={fen}'; break
+    if side == 'white' and el > 1200:
+        reason = f'STALL: White to move but no move for {int(el)}s (>20min) - agent B not proceeding. fen={fen}'; break
     if side == 'black' and int(el) % 120 < 30 and el > 180:
         w(f'engine still thinking {int(el)}s (deep search; not a B stall)')
     time.sleep(30)

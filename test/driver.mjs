@@ -61,7 +61,9 @@ async function relaunch() {
   await openSite(45000);
 }
 
-try {
+// full game setup (one attempt). Wrapped in a retry below so a random Chromium
+// crash during startup relaunches instead of killing the run.
+async function setupGame() {
   await makeBrowser();
   log('opening ' + SITE + ' (level ' + LEVEL + ', clock ' + CLOCK + ')');
   await openSite();
@@ -89,6 +91,19 @@ try {
   writeFileSync(DIR + '/code.txt', code + '\n');
   log('PAIRING CODE = ' + code + '  (written to code.txt)');
   log('READY — waiting for the LLM to pair and play.');
+}
+
+try {
+  let setupOk = false;
+  for (let attempt = 1; attempt <= 5 && !setupOk; attempt++) {
+    try { await setupGame(); setupOk = true; }
+    catch (e) {
+      log('setup attempt ' + attempt + ' crashed (' + e.message.slice(0, 40) + ') — relaunching');
+      try { if (browser) await browser.close(); } catch {}
+      await sleep(3000);
+    }
+  }
+  if (!setupOk) throw new Error('setup failed after 5 attempts');
 
   if (SETUP_ONLY) { log('SETUP_ONLY done'); await browser.close(); process.exit(0); }
 

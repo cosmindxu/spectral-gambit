@@ -27,6 +27,14 @@ Two subagents play the live HC‑91 ZX‑CHESS game end‑to‑end, with no huma
 
 **A clean mirror of Opus/max:** Sonnet **beats L2, loses L3**; Opus **beats L3, loses L2** — same two engine levels, opposite outcomes. (The first Sonnet L3 attempt mis‑recorded as L2 after a move‑0 browser crash; re‑run and the stray row removed — see Notes.)
 
+## Sonnet / low — level 5
+
+| Level | Result | Decisive moment |
+|------:|--------|-----------------|
+| 5 | **Loss** ❌ | Even opening, then **8.Qd6+??** dropped the queen to 8…cxd6; played on down a queen and was mated **20…Qxc1#** (39 plies) |
+
+**A deliberate mismatch** — the lowest effort tier against the *strongest* engine. Sonnet/low hung its queen on move 8 and the L5 engine converted without trouble. Same one‑blunder‑decides‑it pattern as the max games, just reached faster and with less resistance.
+
 ## Observations
 
 - **It's about conversion, not raw strength.** The engine ladder is monotonic, but the *results* aren't: Opus beat L1 and L3 yet lost L2. Every loss traces to a single tactical miscalculation (12.Bf4??, 26.Bb3??), not to being strategically outplayed. The player reaches sound or better positions, then throws them away in one move.
@@ -42,5 +50,6 @@ A result is **only recorded at a terminal position** (checkmate/stalemate; `game
 
 - **Opus max** — 5 games, 2 wins, best level **3**.
 - **Sonnet max** — 2 games, 1 win (L2) + 1 loss (L3); best level **2**.
+- **Sonnet low** — 1 game, 0 wins (L5 loss).
 
 *All games AI‑assisted (the companion played 100% of White's moves) and flagged accordingly. Move references above are from each game's PGN.*

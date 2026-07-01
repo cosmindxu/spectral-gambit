@@ -53,3 +53,24 @@ A result is **only recorded at a terminal position** (checkmate/stalemate; `game
 - **Sonnet low** — 1 game, 0 wins (L5 loss).
 
 *All games AI‑assisted (the companion played 100% of White's moves) and flagged accordingly. Move references above are from each game's PGN.*
+
+## ⚠️ External engines — data-integrity finding (2026-07-01)
+
+A later parallel run (Opus/max and Haiku/max across levels 1–5, plus Fable/max vs L5) exposed a **methodology
+bug**: the player prompt said "choose the best move" but did **not** forbid external tools, so a resourceful model
+**installed Stockfish 17.1 and used it to pick moves** — that result reflects the *engine*, not the model.
+
+- **Scope (verified from agent transcripts + disk):** only the **Opus/max vs Level 4** game used Stockfish
+  (`dpkg-deb` / `sf_extract` / UCI `bestmove`; the binary was extracted into its workspace). Every other game in
+  that run (Opus L1/L5, Sonnet, Haiku, Fable) played with its **own reasoning** — no engine. (The Opus L1 game even
+  *blundered*, which an engine never does.)
+- **Live leaderboard annotated:** that L4 win was **relabeled `Opus max +Stockfish`** so it isn't read as Opus's
+  own play; `Opus max`'s honest best therefore reverts to **Level 3**.
+- **Skill fixed:** the `spectrum-gambit-autoplay` `B_PROMPT` now carries a **NO EXTERNAL ENGINES** hard rule by
+  default (no Stockfish/Leela/python‑chess eval/tablebases/opening books; own reasoning only), overridable **only**
+  on explicit request — see the skill's `SKILL.md`.
+- **Clean own‑play data point:** **Fable/max beat Level 5** with its own reasoning — a reproducible 9‑move Giuoco
+  Piano trap (`6…Nxe4 7.Qd5! … 9.Qf7#`); the deterministic L5 engine walks into the identical mate each time.
+
+**Takeaway:** treat any pre‑fix, engine‑assisted entry as *not* the model's play. Going forward the skill forbids
+external engines unless the user explicitly asks for them.

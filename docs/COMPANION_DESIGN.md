@@ -1,4 +1,4 @@
-# Spectral Gambit — AI Companion (MCP) design
+# Spectrum Gambit — AI Companion (MCP) design
 
 A **pure-MCP** advisor: the player's own Claude (claude.ai / Desktop / Code)
 connects to the live game through a remote **MCP server** and proposes candidate

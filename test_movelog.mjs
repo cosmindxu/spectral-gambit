@@ -2,7 +2,7 @@
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 const require = createRequire(import.meta.url);
-const factory = require('./web/spectral.js');
+const factory = require('./web/spectrum.js');
 const { diffMove, toMovetext } = await import(pathToFileURL('/tmp/_c.mjs'));
 
 const M = await factory();

@@ -1,6 +1,6 @@
 import { Chess } from 'chess.js';   // server-side result verification
 
-// Spectral Gambit — Cloudflare Worker API (D1-backed).
+// Spectrum Gambit — Cloudflare Worker API (D1-backed).
 //
 // Routes (all JSON unless noted):
 //   POST /api/games            {mode,name}            -> {id,color,token,join}
@@ -239,7 +239,7 @@ async function companionAck(req, db) {
 const MCP_PROTO = '2025-06-18';
 const SUPPORTED_PROTO = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const MCP_INSTRUCTIONS =
-  "You are a chess companion for a live game on the player's Spectral Gambit page. " +
+  "You are a chess companion for a live game on the player's Spectrum Gambit page. " +
   "The player plays WHITE; the engine plays Black.\n" +
   "Workflow: (1) Call pair once with the 6-character code from their page. " +
   "(2) Call get_position to see the live FEN, whose turn it is, the engine eval, and the legal moves. " +
@@ -253,7 +253,7 @@ const MCP_INSTRUCTIONS =
 
 const TOOLS = [
   { name: 'pair', title: 'Pair with the chess game',
-    description: "Pair with the player's chess game using the 6-character code shown on their Spectral Gambit page. Call this first.",
+    description: "Pair with the player's chess game using the 6-character code shown on their Spectrum Gambit page. Call this first.",
     inputSchema: { type: 'object', properties: { code: { type: 'string', description: 'The 6-character pairing code from the page' } }, required: ['code'] } },
   { name: 'get_position', title: 'Get the current position',
     description: 'Get the live position: FEN, PGN, side to move, engine evaluation (centipawns), engine level, and the list of legal moves in SAN. Call after pair.',
@@ -308,7 +308,7 @@ async function mcpDispatch(msg, db, mcpSession, setSession) {
       return rpcOk(id, {
         protocolVersion: proto,
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: 'spectral-gambit', title: 'Spectral Gambit chess companion', version: '1.0.0' },
+        serverInfo: { name: 'spectrum-gambit', title: 'Spectrum Gambit chess companion', version: '1.0.0' },
         instructions: MCP_INSTRUCTIONS,
       });
     }

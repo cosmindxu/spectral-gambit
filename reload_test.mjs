@@ -3,7 +3,7 @@
 import { createRequire } from 'node:module';
 import { writeFileSync, readFileSync } from 'node:fs';
 const require = createRequire(import.meta.url);
-const factory = require('./web/spectral.js');
+const factory = require('./web/spectrum.js');
 
 function mk(M){const c=(n,r,a)=>M.cwrap(n,r,a);return{
   init:c('sg_init','number',[]),run:c('sg_run_frame','void',[]),

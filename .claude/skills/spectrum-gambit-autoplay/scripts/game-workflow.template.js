@@ -1,4 +1,4 @@
-// Spectral Gambit autonomous-game workflow TEMPLATE.
+// Spectrum Gambit autonomous-game workflow TEMPLATE.
 // Substitute the {{TOKENS}} (LEVEL, CLOCK, MODEL, EFFORT, NAME) before launching
 // via the Workflow tool (pass the result as the inline `script`).
 //   {{LEVEL}}  engine strength 1..5            (agent A)
@@ -7,16 +7,16 @@
 //   {{EFFORT}} low|medium|high|max             (agent B)
 //   {{NAME}}   leaderboard label, e.g. "Opus max"
 export const meta = {
-  name: 'spectral-gambit-autoplay',
-  description: 'Two subagents play a Spectral Gambit game: the user (Chromium driver) + an LLM (via MCP)',
+  name: 'spectrum-gambit-autoplay',
+  description: 'Two subagents play a Spectrum Gambit game: the user (Chromium driver) + an LLM (via MCP)',
   phases: [{ title: 'Play', detail: 'A hosts the level-{{LEVEL}} game; B ({{MODEL}}/{{EFFORT}}) plays via MCP' }],
 };
 
 const A_PROMPT = [
-  'You are subagent A: "the user", operating the live Spectral Gambit chess site through Chromium.',
+  'You are subagent A: "the user", operating the live Spectrum Gambit chess site through Chromium.',
   'Run this single command in the foreground and let it run to completion (it can take up to ~90 minutes):',
   '',
-  '    cd /home/dcosmin/spectral-gambit/test && SG_LEVEL={{LEVEL}} SG_CLOCK={{CLOCK}} SG_NAME="{{NAME}}" SG_DIR=/tmp/sg_game node driver.mjs',
+  '    cd /home/dcosmin/spectrum-gambit/test && SG_LEVEL={{LEVEL}} SG_CLOCK={{CLOCK}} SG_NAME="{{NAME}}" SG_DIR=/tmp/sg_game node driver.mjs',
   '',
   'That driver opens the live site, starts a NEW game at strength {{LEVEL}} (clock {{CLOCK}}), enables the AI',
   'Companion + auto-play, writes the 6-char pairing code to /tmp/sg_game/code.txt, keeps the page un-throttled so',
@@ -29,9 +29,9 @@ const A_PROMPT = [
 
 const B_PROMPT = [
   'You are subagent B: the chess brain. You play WHITE against a level-{{LEVEL}} engine (Black) in a live game on',
-  'Spectral Gambit, driving it through its remote MCP server with curl. Play strong, principled chess and TRY TO WIN.',
+  'Spectrum Gambit, driving it through its remote MCP server with curl. Play strong, principled chess and TRY TO WIN.',
   'Reason carefully about each position. The MCP endpoint is:',
-  '    MCP=https://spectral-gambit-api.cosmindxu.workers.dev/mcp',
+  '    MCP=https://spectrum-gambit-api.cosmindxu.workers.dev/mcp',
   '',
   'IMPORTANT — keep every Bash call SHORT (one or a few curls, no long sleep/poll loops): the shell has a 2-minute',
   'cap, so do NOT write a single command that polls for minutes. Reason between calls instead. Set a curl User-Agent',

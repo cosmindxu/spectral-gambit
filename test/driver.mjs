@@ -1,4 +1,4 @@
-// Browser driver for subagent A ("the user"): opens the LIVE Spectral Gambit
+// Browser driver for subagent A ("the user"): opens the LIVE Spectrum Gambit
 // page in Chromium, starts a new game at strength SG_LEVEL (+ optional SG_CLOCK),
 // enables the AI Companion + auto-play, publishes the pairing code, then keeps
 // the page un-throttled so the LLM's moves auto-play. Snapshots the board and,
@@ -17,7 +17,7 @@
 // result.json (at game over), profile/ (persistent Chromium profile).
 import puppeteer from 'puppeteer-core';
 import { writeFileSync } from 'node:fs';
-const SITE = 'https://cosmindxu.github.io/spectral-gambit/';
+const SITE = 'https://cosmindxu.github.io/spectrum-gambit/';
 const DIR = process.env.SG_DIR || '/tmp/sg_game';
 const LEVEL = String(process.env.SG_LEVEL || '5');
 const CLOCK = process.env.SG_CLOCK || 'off';

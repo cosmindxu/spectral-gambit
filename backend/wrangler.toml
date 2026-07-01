@@ -1,9 +1,9 @@
-name = "spectral-gambit-api"
+name = "spectrum-gambit-api"
 main = "worker.js"
 compatibility_date = "2024-09-01"
 
-# Create the DB once with:  wrangler d1 create spectral-gambit
-# then paste the returned database_id below.
+# NOTE: the D1 database keeps its original name "spectral-gambit" (renaming a D1
+# database would orphan the live leaderboard data); the binding is by database_id.
 [[d1_databases]]
 binding = "DB"
 database_name = "spectral-gambit"

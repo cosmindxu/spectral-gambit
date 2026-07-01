@@ -1,4 +1,4 @@
-// Exhaustive UI test suite for Spectral Gambit, driven through a real
+// Exhaustive UI test suite for Spectrum Gambit, driven through a real
 // headless Chromium (puppeteer-core). Covers every button, text field and
 // input, plus two-consecutive-input sequences. Each test runs on a clean
 // reload and fails if it triggers any console/page error.

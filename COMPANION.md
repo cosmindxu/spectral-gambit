@@ -1,11 +1,11 @@
-# Spectral Gambit — AI Companion (MCP) setup
+# Spectrum Gambit — AI Companion (MCP) setup
 
 Let **your own Claude** advise your live game. It's **off by default** and uses
 **no API key** — it connects to a remote **MCP** server that exposes the position,
 and the conversation happens in your Claude app. The chess page shows Claude's
 three suggestions as click-to-play cards.
 
-- **Connector URL:** `https://spectral-gambit-api.cosmindxu.workers.dev/mcp`
+- **Connector URL:** `https://spectrum-gambit-api.cosmindxu.workers.dev/mcp`
 - **Pairing code:** shown on the page after you toggle **AI Companion → Enable**
   (a 6-character code like `MLX3ZJ`).
 
@@ -25,9 +25,9 @@ using the `mcp-remote` bridge:
 ```json
 {
   "mcpServers": {
-    "spectral-gambit": {
+    "spectrum-gambit": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://spectral-gambit-api.cosmindxu.workers.dev/mcp"]
+      "args": ["-y", "mcp-remote", "https://spectrum-gambit-api.cosmindxu.workers.dev/mcp"]
     }
   }
 }
@@ -36,8 +36,8 @@ Restart Claude Desktop, then tell it to **pair** with the code on the page.
 
 ## Set up in Claude Code
 ```sh
-claude mcp add --transport http spectral-gambit \
-  https://spectral-gambit-api.cosmindxu.workers.dev/mcp
+claude mcp add --transport http spectrum-gambit \
+  https://spectrum-gambit-api.cosmindxu.workers.dev/mcp
 ```
 Then, in a session, tell it to **pair** with the code and ask for advice.
 

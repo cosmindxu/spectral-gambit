@@ -1,4 +1,4 @@
--- Spectral Gambit — D1 schema (also used verbatim by the local dev shim).
+-- Spectrum Gambit — D1 schema (also used verbatim by the local dev shim).
 
 -- Correspondence (async human-vs-human) games. The full machine state
 -- lives in `szx` (base64); turns are enforced by per-side tokens.

@@ -1,9 +1,9 @@
-# Spectral Gambit — autonomous LLM ladder results
+# Spectrum Gambit — autonomous LLM ladder results
 
 Two subagents play the live HC‑91 ZX‑CHESS game end‑to‑end, with no human moves:
 
 - **Agent B (the player):** Claude playing **White**, fully autonomous via the live **MCP** server.
-- **Agent A (the "user"):** headless‑Chromium driver hosting the live game (crash‑survival + auto board‑screenshots), run through the `/spectral-gambit-autoplay` skill.
+- **Agent A (the "user"):** headless‑Chromium driver hosting the live game (crash‑survival + auto board‑screenshots), run through the `/spectrum-gambit-autoplay` skill.
 - **Method:** one game per engine level, **clock off**, played **all the way to a forced checkmate** (the engine never resigns, and the leaderboard only records a *terminal* position — see Notes). Each result is **server‑verified** from the final FEN.
 
 ## Opus / max — full ladder (levels 1–5)

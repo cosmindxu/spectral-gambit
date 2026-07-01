@@ -1,4 +1,4 @@
-# Spectral Gambit — UI test plan
+# Spectrum Gambit — UI test plan
 
 Exhaustive, automated coverage of every button, text field and input, plus
 two-consecutive-input sequences. Executed in a **real headless Chromium**

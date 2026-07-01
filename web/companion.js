@@ -81,9 +81,9 @@ async function start() {
   $('companion-code').textContent = session.code;
   // fill the per-client setup snippets with the real URL + code
   const d = $('companion-desktop');
-  if (d) d.textContent = JSON.stringify({ mcpServers: { 'spectral-gambit': { command: 'npx', args: ['-y', 'mcp-remote', MCP_URL] } } }, null, 2);
+  if (d) d.textContent = JSON.stringify({ mcpServers: { 'spectrum-gambit': { command: 'npx', args: ['-y', 'mcp-remote', MCP_URL] } } }, null, 2);
   const cli = $('companion-cli');
-  if (cli) cli.textContent = `claude mcp add --transport http spectral-gambit ${MCP_URL}`;
+  if (cli) cli.textContent = `claude mcp add --transport http spectrum-gambit ${MCP_URL}`;
   document.querySelectorAll('.codeRef').forEach(e => (e.textContent = session.code));
   await pushState();
   if (pollTimer) clearInterval(pollTimer);

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render a faithful preview of the Spectral Gambit page (chrome + panel
+"""Render a faithful preview of the Spectrum Gambit page (chrome + panel
 + the real emulator screenshot composited in), matching style.css."""
 from PIL import Image, ImageDraw, ImageFont
 
@@ -22,7 +22,7 @@ for i,c in enumerate(ZX):
     d.rectangle([i*W//4,0,(i+1)*W//4,6],fill=c)
 
 # title (approx gradient by per-letter colour ramp)
-title="SPECTRAL  GAMBIT"; fT=F(46,True)
+title="SPECTRUM  GAMBIT"; fT=F(46,True)
 tw=d.textlength(title,font=fT); x=(W-tw)/2;
 ramp=[(216,0,0),(255,160,0),(255,208,0),(120,200,0),(0,192,120),(0,192,192)]
 for i,ch in enumerate(title):

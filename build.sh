@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the Spectral Gambit WASM core from the hc91emu sources.
+# Build the Spectrum Gambit WASM core from the hc91emu sources.
 set -e
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
@@ -21,13 +21,13 @@ EXPORTS='["_sg_init","_sg_run_frame","_sg_framebuffer","_sg_fb_w","_sg_fb_h","_s
 RT='["ccall","cwrap","FS","UTF8ToString","stringToUTF8","lengthBytesUTF8","HEAPU8","HEAPU32"]'
 
 emcc -O2 -std=c99 -I"$SRC" $SRCS \
-  -s MODULARIZE=1 -s EXPORT_NAME=SpectralGambit \
+  -s MODULARIZE=1 -s EXPORT_NAME=SpectrumGambit \
   -s ALLOW_MEMORY_GROWTH=1 \
   -s ENVIRONMENT=web,node \
   -s EXPORTED_FUNCTIONS="$EXPORTS" \
   -s EXPORTED_RUNTIME_METHODS="$RT" \
   --embed-file "$ROOT/build_assets/48.rom"@/48.rom \
   --embed-file "$ROOT/build_assets/chess.tap"@/chess.tap \
-  -o "$OUT/spectral.js"
+  -o "$OUT/spectrum.js"
 
-echo "built $OUT/spectral.js + spectral.wasm"
+echo "built $OUT/spectrum.js + spectrum.wasm"

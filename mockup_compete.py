@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preview of the Spectral Gambit compete section (ladder + leaderboard,
+"""Preview of the Spectrum Gambit compete section (ladder + leaderboard,
 play-a-friend correspondence)."""
 from PIL import Image, ImageDraw, ImageFont
 W,H=1080,560
@@ -56,7 +56,7 @@ t(ix+12+d.textlength("You are White ",font=F(13)),y+20," · your move — play i
 y+=52
 # share row
 rr([ix,y,ix+iw-110,y+38],8,fill=CARD,outline=LINE)
-t(ix+12,y+19,"spectralgambit.com/?g=qvp5zu5m5x",F(12),fill=DIM,anchor="lm")
+t(ix+12,y+19,"spectrumgambit.com/?g=qvp5zu5m5x",F(12),fill=DIM,anchor="lm")
 rr([ix+iw-100,y,ix+iw,y+38],8,fill=(28,28,44),outline=LINE);t(ix+iw-50,y+19,"Copy link",F(11),anchor="mm")
 y+=52
 for i,(lab,pri) in enumerate([("Submit move",True),("Refresh",False),("Leave",False)]):

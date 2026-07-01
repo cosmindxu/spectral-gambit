@@ -4,7 +4,7 @@
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 const require = createRequire(import.meta.url);
-const factory = require('./web/spectral.js');
+const factory = require('./web/spectrum.js');
 const same=(a,b)=>{for(let i=0;i<128;i++)if(a[i]!==b[i])return false;return true;};
 
 function mk(M){const c=(n,r,a)=>M.cwrap(n,r,a);return{

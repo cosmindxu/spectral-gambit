@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Read-only watchdog for the autonomous Spectral Gambit game. Pairs a monitor
+# Read-only watchdog for the autonomous Spectrum Gambit game. Pairs a monitor
 # session to the live MCP server (using the code agent A published in
 # code.txt) and polls the authoritative position every 30s. Exits (which
 # notifies the parent) on: result saved, game over, or a real B-stall
@@ -10,14 +10,14 @@
 # curl-like UA so the requests get through.
 import json, time, os, urllib.request
 DIR = os.environ.get('SG_DIR', '/tmp/sg_game')
-MCP = os.environ.get('SG_MCP', 'https://spectral-gambit-api.cosmindxu.workers.dev/mcp')
+MCP = os.environ.get('SG_MCP', 'https://spectrum-gambit-api.cosmindxu.workers.dev/mcp')
 LOG = DIR + '/watchdog.log'
 def w(m):
     open(LOG, 'a').write(time.strftime('%H:%M:%S ') + m + '\n')
 def rpc(method, params=None, call=False, sid=None):
     body = {'jsonrpc': '2.0', 'id': 1, 'method': ('tools/call' if call else method),
             'params': ({'name': method, 'arguments': params or {}} if call else (params or {}))}
-    h = {'Content-Type': 'application/json', 'User-Agent': 'curl/8.0 spectral-gambit-watchdog'}
+    h = {'Content-Type': 'application/json', 'User-Agent': 'curl/8.0 spectrum-gambit-watchdog'}
     if sid: h['Mcp-Session-Id'] = sid
     req = urllib.request.Request(MCP, data=json.dumps(body).encode(), headers=h)
     r = urllib.request.urlopen(req, timeout=25)

@@ -1,11 +1,11 @@
-# Spectral Gambit
+# Spectrum Gambit
 
 **8-bit chess against an AI that wrote itself.** Play a chess engine
 hand-written in Z80 assembly (by Fable), running on a faithful emulation of
 the ICE Felix **HC-91** — a Romanian ZX Spectrum clone — compiled to
 **WebAssembly** and running entirely in your browser.
 
-> *Spectrum + the ghost in the machine = Spectral. Chess = Gambit.*
+> *ZX Spectrum lineage, chess gambit spirit.*
 
 ## What it does
 
@@ -30,7 +30,7 @@ src/web.c            Emscripten entry point over the hc91emu core
 build.sh             compile the WASM core (needs emcc)
 web/                 the static front-end (this is what you deploy)
   index.html app.js compete.js chess.js config.js style.css
-  spectral.js/.wasm  built core (embeds 48.rom + chess.tap)
+  spectrum.js/.wasm  built core (embeds 48.rom + chess.tap)
 backend/             Cloudflare Worker + D1 (worker.js, schema.sql, wrangler.toml)
   devserver.py       identical API in Python/SQLite for local testing
 verify.mjs           headless node check: boot, render PNG, play e2-e4

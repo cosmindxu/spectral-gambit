@@ -5,7 +5,7 @@ import { deflateSync } from 'node:zlib';
 import { writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const factory = require('./web/spectral.js');
+const factory = require('./web/spectrum.js');
 
 // --- minimal PNG encoder (RGBA, no filtering) ---
 function crc32(buf) {
@@ -52,7 +52,7 @@ function press(name){ sg_key(name,1); frames(7); sg_key(name,0); frames(8); }
 if (sg_init()!==0){ console.error('sg_init FAILED'); process.exit(1); }
 frames(900);                          // boot + autoload + LOAD ""
 console.log('after boot, frame', sg_fc());
-snap('/home/dcosmin/spectral-gambit/web/assets/boot.png');
+snap('/home/dcosmin/spectrum-gambit/web/assets/boot.png');
 const boot = screen();
 console.log('--- screen after boot ---');
 console.log(boot);
@@ -63,7 +63,7 @@ frames(2500);                          // let the engine think + reply
 const after = screen();
 console.log('--- screen after 1.e4 + engine reply ---');
 console.log(after);
-snap('/home/dcosmin/spectral-gambit/web/assets/move1.png');
+snap('/home/dcosmin/spectrum-gambit/web/assets/move1.png');
 
 const ok = /your move/i.test(after);
 console.log(ok ? 'PASS: engine replied, status back to "Your move"' : 'FAIL: no "Your move" after 1.e4');

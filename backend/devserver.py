@@ -5,7 +5,7 @@ deploying. Run: python3 devserver.py [port]  (default 8100)."""
 import json, os, re, sqlite3, sys, time, uuid, random, string
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-DB = os.path.join(os.path.dirname(__file__), "spectral.db")
+DB = os.path.join(os.path.dirname(__file__), "spectrum.db")
 SCHEMA = os.path.join(os.path.dirname(__file__), "schema.sql")
 
 def db():
@@ -126,5 +126,5 @@ class H(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     init_db()
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8100
-    print(f"Spectral Gambit dev API on :{port}  (db={DB})")
+    print(f"Spectrum Gambit dev API on :{port}  (db={DB})")
     ThreadingHTTPServer(("0.0.0.0", port), H).serve_forever()

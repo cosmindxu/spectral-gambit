@@ -1,4 +1,4 @@
-/* web.c — Spectral Gambit: Emscripten entry point.
+/* web.c — Spectrum Gambit: Emscripten entry point.
  *
  * Wraps the hc91emu core (z80 + machine + video + snapshot) for the
  * browser. The real Z80 runs the real chess.tap; JS drives frames,

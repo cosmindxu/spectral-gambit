@@ -2,7 +2,7 @@
 // move on the board, driving the actual emulator (no browser needed).
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const factory = require('./web/spectral.js');
+const factory = require('./web/spectrum.js');
 const M = await factory();
 const c=(n,r,a)=>M.cwrap(n,r,a);
 const init=c('sg_init','number',[]),run=c('sg_run_frame','void',[]),

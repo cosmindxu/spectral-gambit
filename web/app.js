@@ -1,4 +1,4 @@
-// app.js — Spectral Gambit front-end.
+// app.js — Spectrum Gambit front-end.
 // Drives the WASM emulator: runs frames, renders the ZX screen to a
 // canvas, feeds live keys, derives a move log, and auto-saves full
 // machine state so a game can be put down and resumed hours later.
@@ -22,7 +22,7 @@ let posKeys = [];                            // authoritative position-keys this
 const START_FEN_BOARD = buildStartBoard();
 
 // ---------- boot ----------
-SpectralGambit().then((mod) => {
+SpectrumGambit().then((mod) => {
   M = mod;
   sg.init   = M.cwrap('sg_init', 'number', []);
   sg.run    = M.cwrap('sg_run_frame', 'void', []);
@@ -385,7 +385,7 @@ function wireUI() {
   };
   document.getElementById('export').onclick = () => {
     const bytes = readSzx(); if (!bytes) return;
-    download('spectral-gambit.szx', bytes);
+    download('spectrum-gambit.szx', bytes);
   };
   document.getElementById('importfile').onchange = (e) => {
     const f = e.target.files[0]; if (!f) return;

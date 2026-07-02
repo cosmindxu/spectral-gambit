@@ -56,6 +56,9 @@ let enabled = localStorage.getItem('sg_companion') === '1';
 let autoPlay = localStorage.getItem('sg_companion_autoplay') === '1';
 let session = null;                 // {sessionId, code}
 let pollTimer = null, lastSugAt = 0, handledCmd = new Set();
+let stallPolls = 0;              // consecutive polls a queued move has been blocked (liveness backstop)
+let lastPollSig = null;          // board signature from the previous poll (settle-stability guard)
+const STALL_LIMIT = 20;          // ~1 min at the 3s poll: after this, force a blocked move through
 
 function init() {
   const tog = $('companion-enable');
@@ -120,8 +123,17 @@ async function pushState() {
 async function poll() {
   if (!session) return;
   // catch ANY board change the move-log hooks miss — New game, Take back, slot
-  // load, import — and re-sync the position to the server.
-  if (pushedSig !== null && boardSig() !== pushedSig) await pushState();
+  // load, import — and re-sync the position to the server. But only re-push a board
+  // that is SETTLED (not mid-search) AND STABLE (unchanged since the last poll): the
+  // engine searches on the live board, so a mid-search read would leak a speculative
+  // position into the pushed PGN as phantom moves that revert next poll. status() can
+  // briefly lag the real search, so the stability check is the actual guard — a genuinely
+  // settled position is unchanged across a poll tick, whereas a search churns every tick.
+  const nowSig = boardSig();
+  if (pushedSig !== null && nowSig !== pushedSig && nowSig === lastPollSig && !/thinking/i.test(window.SG.status())) {
+    await pushState();
+  }
+  lastPollSig = nowSig;
   const r = await api(`/api/companion/poll?sessionId=${session.sessionId}`).catch(() => null);
   if (!r) { setStatus('offline', 'backend unreachable'); return; }
   if (r.error) { localStorage.removeItem('sg_companion_session'); session = await openSession(); return; }
@@ -140,9 +152,15 @@ async function poll() {
   for (const c of r.commands || []) {
     if (handledCmd.has(c.id)) continue;
     if (!autoPlay) { handledCmd.add(c.id); handleCommand(c); continue; }
-    if (/thinking/i.test(window.SG.status()) || window.SG.queueLen() > 0) break;   // unsettled — retry next poll
-    const outcome = await playSan(c.san);
-    if (outcome === 'thinking') break;            // became unsettled — leave pending, retry next poll
+    const unsettled = /thinking/i.test(window.SG.status()) || window.SG.queueLen() > 0;
+    // Normally wait for a settled board. But BOUND the wait: if the board stays unsettled
+    // for STALL_LIMIT consecutive polls (~1 min — e.g. the emulator's search hung under
+    // heavy load), force the move through rather than freezing the game forever (the
+    // pre-fix livelock: a stuck "thinking"/queue state blocked every move indefinitely).
+    if (unsettled && stallPolls < STALL_LIMIT) { stallPolls++; break; }   // still within grace — retry next poll
+    const outcome = await playSan(c.san, /* force = */ unsettled);
+    if (outcome === 'thinking') { stallPolls++; break; }   // (not forced) still unsettled — leave pending
+    stallPolls = 0;
     handledCmd.add(c.id);
     ack(c.id, outcome === 'played' ? 'done' : 'dismissed');
     break;                                        // one move per poll; let it settle before the next
@@ -184,14 +202,15 @@ function logLine(sug) {
 }
 
 // ---- playing moves ----
-async function playSan(san) {
+async function playSan(san, force = false) {
   await ensurePos();
   // Never apply a move to a speculative mid-search board: while the engine is
   // thinking, sg.board() is its internal scratch position, so `san` maps to the
   // wrong from/to squares (or to none). Report the race so the caller can retry
   // once the position settles, instead of entering a garbage move. Returns one of
-  // 'thinking' | 'illegal' | 'played'.
-  if (/thinking/i.test(window.SG.status())) return 'thinking';
+  // 'thinking' | 'illegal' | 'played'. `force` overrides the settle-gate — used as a
+  // liveness backstop by poll() when the board has been stuck too long (see STALL_LIMIT).
+  if (!force && /thinking/i.test(window.SG.status())) return 'thinking';
   const pos = curPos();
   const m = pos.sanToMove(san);
   if (!m) { window.SG.flash(`${san} isn't legal now — the position changed`); clearCards('position changed — ask Claude for fresh advice'); return 'illegal'; }

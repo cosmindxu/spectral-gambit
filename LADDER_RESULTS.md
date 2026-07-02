@@ -35,6 +35,20 @@ Two subagents play the live HC‑91 ZX‑CHESS game end‑to‑end, with no huma
 
 **A deliberate mismatch** — the lowest effort tier against the *strongest* engine. Sonnet/low hung its queen on move 8 and the L5 engine converted without trouble. Same one‑blunder‑decides‑it pattern as the max games, just reached faster and with less resistance.
 
+## Fable / max vs Level 5 — a reproducible blind spot (3 games)
+
+Fable (max effort, **own reasoning only** — external engines forbidden) played the strongest engine three times:
+
+| # | Result | Length | Line |
+|--:|--------|--------|------|
+| 1 | **WIN** ✅ | 9 moves | Giuoco Piano: `5.d4 … 6.dxe5 Nxe4 7.Qd5!` (double attack) … `9.Qf7#` |
+| 2 | **Loss** ❌ | 33 moves | Giuoco Pianissimo (`5.d3`) — a normal game lost to Fable's own `23.c5?? Qxd4` blunder, mated `33…Qe1#` |
+| 3 | **WIN** ✅ | 9 moves | **byte‑identical to Game 1** — same trap, same mate |
+
+**Read honestly:** Games 1 and 3 are the *same* game — Fable repeated the `5.d4` trap and, because the ZX engine is **deterministic**, Level 5 walked into the identical 9‑move mate both times (both verified at `engineLevel = 5`, so it's not a difficulty‑setting artifact). In Game 2, where Fable varied into a normal line, it **lost**. So Fable does **not** out‑play Level 5 in general — but it **found and reliably reproduces a genuine tactical blind spot**: after `6…Nxe4 7.Qd5!` the Level‑5 search fails to avoid `Qf7#` even though defenses exist (e.g. `7…d5` blocks the `c4–f7` diagonal). That's a concrete search/eval hole on the *engine* side.
+
+**Still a real result.** Finding an opponent's reproducible blind spot *is* a victory — it's an exploit worth fixing engine‑side. It just isn't evidence of Fable's overall strength. (Its Lv5 entries are left as wins — a legitimate exploit of the weakness, not annotated.)
+
 ## Observations
 
 - **It's about conversion, not raw strength.** The engine ladder is monotonic, but the *results* aren't: Opus beat L1 and L3 yet lost L2. Every loss traces to a single tactical miscalculation (12.Bf4??, 26.Bb3??), not to being strategically outplayed. The player reaches sound or better positions, then throws them away in one move.
@@ -69,8 +83,9 @@ bug**: the player prompt said "choose the best move" but did **not** forbid exte
 - **Skill fixed:** the `spectrum-gambit-autoplay` `B_PROMPT` now carries a **NO EXTERNAL ENGINES** hard rule by
   default (no Stockfish/Leela/python‑chess eval/tablebases/opening books; own reasoning only), overridable **only**
   on explicit request — see the skill's `SKILL.md`.
-- **Clean own‑play data point:** **Fable/max beat Level 5** with its own reasoning — a reproducible 9‑move Giuoco
-  Piano trap (`6…Nxe4 7.Qd5! … 9.Qf7#`); the deterministic L5 engine walks into the identical mate each time.
+- **Clean own‑play data point:** **Fable/max vs Level 5** was run with its own reasoning (no engine). Over 3 games
+  it went **2–1** — but both wins are the *same* reproducible opening trap and it lost the one game it varied: a
+  found engine blind spot, not general strength. See *Fable / max vs Level 5 — a reproducible blind spot* above.
 
 **Takeaway:** treat any pre‑fix, engine‑assisted entry as *not* the model's play. Going forward the skill forbids
 external engines unless the user explicitly asks for them.
